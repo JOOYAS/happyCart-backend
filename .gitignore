@@ -14,3 +14,6 @@ npm-debug.log*
 
 # Optional: OS-specific files
 Thumbs.db
+
+#api tests
+*.http

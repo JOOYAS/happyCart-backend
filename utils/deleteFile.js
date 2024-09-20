@@ -1,12 +1,10 @@
 const fs = require("fs");
 
 // Function to delete a file
-const deleteFile = (filePath) => {
+const deleteFile = async (filePath) => {
     fs.unlink(filePath, (err) => {
         if (err) {
             console.error(`failed to clean file: ${err}`);
-        } else {
-            console.log("File cleaned after use");
         }
     });
 };

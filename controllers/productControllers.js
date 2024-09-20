@@ -22,6 +22,7 @@ const newProduct = async (req, res, next) => {
                     async (file) => await handleImageUpload(file.path)
                 )
             );
+            req.files.forEach((file) => deleteFile(file.path));
         }
         const newProduct = new Product({
             ...productData,
@@ -33,7 +34,6 @@ const newProduct = async (req, res, next) => {
             $push: { products: newProduct._id },
         });
         res.status(200).json(newProduct);
-        req.files.forEach((file) => deleteFile(file.path));
     } catch (error) {
         console.log(error);
         next(error);
@@ -54,6 +54,7 @@ const updateProduct = async (req, res, next) => {
                     async (file) => await handleImageUpload(file.path)
                 )
             );
+            req.files.forEach((file) => deleteFile(file.path));
         }
         const updatedProduct = await Product.findByIdAndUpdate(
             req.params.productId,
@@ -68,13 +69,23 @@ const updateProduct = async (req, res, next) => {
             product: isProductExist.name,
             updated: editedProductData,
         });
-        req.files.forEach((file) => deleteFile(file.path));
     } catch (error) {
         console.log(error);
         next(error);
     }
 };
 
+const listAllProduct = async (req, res, next) => {
+    try {
+        const products = await Product.find({});
+        if (!products)
+            return res.status(400).json({ message: "couldn't get the list" });
+        res.status(200).json(products);
+    } catch (error) {
+        console.log(error);
+        next(error);
+    }
+};
 const viewProduct = async (req, res, next) => {
     try {
         const product = await Product.findById(req.params.productId);
@@ -108,6 +119,7 @@ const removeProduct = async (req, res, next) => {
 module.exports = {
     newProduct,
     updateProduct,
+    listAllProduct,
     viewProduct,
     removeProduct,
 };

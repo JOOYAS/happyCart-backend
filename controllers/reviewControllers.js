@@ -1,24 +1,29 @@
 const Product = require("../models/productModel");
 const Review = require("../models/reviewModel");
+const deleteFile = require("../utils/deleteFile");
+const handleImageUpload = require("../utils/imageUpload");
 
 const newReview = async (req, res, next) => {
     try {
         let imageUrls;
         const reviewData = req.body;
         const isAlreadyReviewed = await Review.findOne({
-            userId: reviewData.userId,
-            productId: reviewData.productId,
+            orderId: reviewData.orderId,
         });
         if (isAlreadyReviewed) {
-            return res.status(409).json({ message: "product already exist" });
+            return res
+                .status(409)
+                .json({ message: "this order is already reviewed" });
         }
 
         if (req.files) {
+            console.log(req.files);
             imageUrls = await Promise.all(
                 req.files.map(
                     async (file) => await handleImageUpload(file.path)
                 )
             );
+            req.files.forEach((file) => deleteFile(file.path));
         }
         const newReview = new Review({
             ...reviewData,
@@ -30,7 +35,6 @@ const newReview = async (req, res, next) => {
             $push: { reviews: newReview._id },
         });
         res.status(200).json(newReview);
-        req.files.forEach((file) => deleteFile(file.path));
     } catch (error) {
         console.log(error);
         next(error);
@@ -51,6 +55,7 @@ const editReview = async (req, res, next) => {
                     async (file) => await handleImageUpload(file.path)
                 )
             );
+            req.files.forEach((file) => deleteFile(file.path));
         }
         const updated = await Review.findByIdAndUpdate(
             isReviewed._id,
@@ -64,7 +69,6 @@ const editReview = async (req, res, next) => {
             message: "updated successfully",
             updated,
         });
-        req.files.forEach((file) => deleteFile(file.path));
     } catch (error) {
         console.log(error);
         next(error);

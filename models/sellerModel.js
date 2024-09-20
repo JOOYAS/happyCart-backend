@@ -19,26 +19,16 @@ const sellerSchema = new mongoose.Schema(
             type: String,
             required: true,
         },
-        details: {
-            type: String,
-            required: true,
-        },
+        details: String,
         address: {
             buildingNo: String,
             street: String,
             pin: String,
             state: String,
         },
-        contactNumber: {
-            type: String,
-            required: true,
-        },
-        contactEmail: {
-            type: String,
-            required: true,
-        },
+        contactNumber: String,
+        contactEmail: String,
         products: [
-            //maybe will remove this
             {
                 type: mongoose.Schema.Types.ObjectId,
                 ref: "Product",

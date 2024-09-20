@@ -30,6 +30,7 @@ const updateItem = async (req, res, next) => {
             req.params.cartId,
             req.body,
             {
+                new: true,
                 runValidators: true,
             }
         );

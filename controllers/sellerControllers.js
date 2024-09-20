@@ -1,6 +1,8 @@
 const bcrypt = require("bcrypt");
 const Seller = require("../models/sellerModel");
 const { generateToken, cookieOptions } = require("../utils/generateToken");
+const deleteFile = require("../utils/deleteFile");
+const handleImageUpload = require("../utils/imageUpload");
 
 const allsellers = async (req, res, next) => {
     //access only after middleware isAdmin
@@ -37,6 +39,7 @@ const sellerJoin = async (req, res, next) => {
 
         if (req.file) {
             logoUrl = await handleImageUpload(req.file.path);
+            deleteFile(req.file.path);
         }
         //encrypting password
         const saltRounds = 10;
@@ -102,7 +105,7 @@ const sellerLogin = async (req, res, next) => {
         const token = await generateToken(data4token);
         res.cookie("token", token, cookieOptions);
         res.status(200).json({
-            seller: data4token,
+            seller: isSellerExist,
             success: true,
             message: "welcome, login successfull",
         });
@@ -114,6 +117,7 @@ const sellerLogin = async (req, res, next) => {
 
 const sellerUpdate = async (req, res, next) => {
     try {
+        let logoUrl;
         const newDetails = req.body; //user id is also  included in new details
         if (!newDetails)
             return res.status(406).json({ message: "no details given" });
@@ -122,7 +126,8 @@ const sellerUpdate = async (req, res, next) => {
             return res.status(404).json({ messsage: "failed to update" });
 
         if (req.file) {
-            imageUrl = await handleImageUpload(req.file.path);
+            logoUrl = await handleImageUpload(req.file.path);
+            deleteFile(req.file.path);
         }
         const updatedSeller = await Seller.findByIdAndUpdate(
             isSellerExist._id,
@@ -143,9 +148,7 @@ const sellerUpdate = async (req, res, next) => {
         res.cookie("token", token, cookieOptions);
         res.status(200).json({
             message: "Successfully updated details",
-            sellername: updatedSeller.sellerName,
-            _id: updatedSeller._id,
-            updated: newDetails,
+            updatedSeller,
         });
     } catch (error) {
         console.log(error);

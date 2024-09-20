@@ -20,7 +20,6 @@ const userSignup = async (req, res, next) => {
     try {
         let imageUrl;
         const userData = req.body;
-        console.log(userData);
         const isUserExist = await User.findOne({ email: userData.email });
         if (isUserExist) {
             return res.status(400).json({ message: "user already exist" });
@@ -28,6 +27,7 @@ const userSignup = async (req, res, next) => {
 
         if (req.file) {
             imageUrl = await handleImageUpload(req.file.path);
+            deleteFile(req.file.path);
         }
         //encrypting password
         const saltRounds = 10;
@@ -52,7 +52,6 @@ const userSignup = async (req, res, next) => {
         const token = await generateToken(data4token);
         res.cookie("token", token, cookieOptions);
         res.status(201).json(newUser);
-        deleteFile(req.file.path);
     } catch (error) {
         console.log("some error in signup");
         next(error);
@@ -115,6 +114,7 @@ const userUpdate = async (req, res, next) => {
 
         if (req.file) {
             imageUrl = await handleImageUpload(req.file.path);
+            deleteFile(req.file.path);
         }
         const updatedUser = await User.findByIdAndUpdate(
             isUserExist._id,
@@ -137,7 +137,6 @@ const userUpdate = async (req, res, next) => {
             message: "Successfully updated details",
             updatedUser,
         });
-        deleteFile(req.file.path);
     } catch (error) {
         console.log(error);
         next(error);
@@ -146,8 +145,13 @@ const userUpdate = async (req, res, next) => {
 
 const deleteUser = async (req, res, next) => {
     try {
-        await User.findByIdAndDelete(req.params.userId);
+        const isUserToDelete = await User.findByIdAndDelete(req.params.userId);
 
+        if (!isUserToDelete)
+            return res.status(400).json({
+                success: false,
+                message: "this user not exist",
+            });
         res.status(200).json({
             success: true,
             message: "your account successfully deleted",

@@ -15,6 +15,7 @@ const newCategory = async (req, res, next) => {
 
         if (req.file) {
             imageUrl = await handleImageUpload(req.file.path);
+            deleteFile(req.file.path);
         }
         const newCategory = new Category({
             ...categoryData,
@@ -23,7 +24,6 @@ const newCategory = async (req, res, next) => {
         await newCategory.save();
 
         res.status(200).json(newCategory);
-        deleteFile(req.file.path);
     } catch (error) {
         console.log(error);
         next(error);
@@ -69,6 +69,7 @@ const updateCategory = async (req, res, next) => {
 
         if (req.file) {
             imageUrl = await handleImageUpload(req.file.path);
+            deleteFile(req.file.path);
         }
         const updatedCategory = await Category.findByIdAndUpdate(
             req.params.categoryId,
@@ -82,7 +83,6 @@ const updateCategory = async (req, res, next) => {
             message: "updated successfully",
             editedCategoryData,
         });
-        deleteFile(req.file.path);
     } catch (error) {
         console.log(error);
         next(error);

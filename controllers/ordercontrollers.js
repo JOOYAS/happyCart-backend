@@ -6,11 +6,15 @@ const User = require("../models/userModel");
 const newOrder = async (req, res, next) => {
     try {
         const newOrderData = req.body;
+
         if (!newOrderData)
             return res.status(400).json({ message: "no order details" });
+
         const product = await Product.findById(newOrderData.productId).select(
             "stock"
         );
+        if (!product)
+            return res.status(404).json({ message: "invalid product" });
         if (product.stock == 0)
             return res.status(403).json({ message: " out of stock" });
         const newOrder = new Order(newOrderData);

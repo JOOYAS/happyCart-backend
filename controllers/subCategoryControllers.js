@@ -18,6 +18,7 @@ const newSubCategory = async (req, res, next) => {
 
         if (req.file) {
             imageUrl = await handleImageUpload(req.file.path);
+            deleteFile(req.file.path);
         }
         const newSubCategory = new SubCategory({
             ...subCategoryData,
@@ -30,7 +31,6 @@ const newSubCategory = async (req, res, next) => {
         });
 
         res.status(200).json(newSubCategory);
-        deleteFile(req.file.path);
     } catch (error) {
         console.log(error);
         next(error);
@@ -81,6 +81,7 @@ const updateSubCategory = async (req, res, next) => {
 
         if (req.file) {
             imageUrl = await handleImageUpload(req.file.path);
+            deleteFile(req.file.path);
         }
         const updatedSubCategory = await SubCategory.findByIdAndUpdate(
             req.params.SubCategoryId,
@@ -95,7 +96,6 @@ const updateSubCategory = async (req, res, next) => {
             whereadded: isSubCategoryExist,
             editedSubCategoryData,
         });
-        deleteFile(req.file.path);
     } catch (error) {
         console.log(error);
         next(error);
