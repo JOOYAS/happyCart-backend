@@ -77,7 +77,7 @@ const editReview = async (req, res, next) => {
 
 const viewReview = async (req, res, next) => {
     try {
-        const review = await Review.findOne({ _id: req.id });
+        const review = await Review.findById(req.params.reviewId);
         if (!review) {
             return res.status(404).json({ message: "review not exist" });
         }
@@ -91,13 +91,16 @@ const viewReview = async (req, res, next) => {
 
 const removeReview = async (req, res, next) => {
     try {
-        const review = await Review.findOne(req.params.reviewid);
-        await Review.findByIdAndDelete(review._id);
-        await Product.findByIdAndUpdate(review.productId, {
-            $pull: { reviews: review._id },
+        const isReviewToDelete = await Review.findByIdAndDelete(
+            req.params.reviewId
+        );
+        if (!isReviewToDelete)
+            return res.status(400).json({ message: "no review to delete" });
+        await Product.findByIdAndUpdate(isReviewToDelete.productId, {
+            $pull: { reviews: req.params.reviewId },
         });
 
-        res.status(200).json({ message: "review deleted" });
+        res.status(200).json({ success: true, message: "review deleted" });
     } catch (error) {
         console.log(error);
         next(error);
