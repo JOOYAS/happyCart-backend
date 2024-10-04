@@ -51,7 +51,11 @@ const userSignup = async (req, res, next) => {
         console.log(`${userData.name} user joined`);
         const token = await generateToken(data4token);
         res.cookie("token", token, cookieOptions);
-        res.status(201).json(newUser);
+        res.status(201).json({
+            ...data4token,
+            success: true,
+            message: `account for ${userData.name} created successfully`,
+        });
     } catch (error) {
         console.log("some error in signup");
         next(error);
