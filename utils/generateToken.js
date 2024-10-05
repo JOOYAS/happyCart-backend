@@ -11,8 +11,8 @@ const generateToken = async (data) => {
 
 const cookieOptions = {
     httpOnly: true,
-    secure: process.env.ENVIRONMENT !== "development",
-    sameSite: process.env.ENVIRONMENT !== "development" ? "None" : "Lax",
+    secure: process.env.ENVIRONMENT === "production",
+    sameSite: process.env.ENVIRONMENT === "production" ? "None" : "Lax",
     maxAge: 1 * 60 * 60 * 1000, // 1 hour
 };
 
