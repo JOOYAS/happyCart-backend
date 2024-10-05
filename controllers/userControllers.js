@@ -77,13 +77,13 @@ const userLogin = async (req, res, next) => {
                 .status(404)
                 .json({ success: false, message: "user does not exist" });
         }
-        //compares hashed userpassword with normal loginpassword
+        //compares hashed userpassword with normal login password
         const passMatch = bcrypt.compareSync(
             loginData.password,
             isUserExist.password
         );
         if (!passMatch) {
-            return res.status(401).json({ message: "user not autherized" });
+            return res.status(401).json({ message: "incorrect password" });
         }
         //generating token
         const data4token = {
