@@ -95,9 +95,9 @@ const userLogin = async (req, res, next) => {
         const token = await generateToken(data4token);
         res.cookie("token", token, cookieOptions);
         res.status(200).json({
-            user: isUserExist,
+            user: data4token,
             success: true,
-            message: "user login successfull",
+            message: `Welcome ${data4token.name}<br/>you are logged in`,
         });
         console.log(`${data4token.name} logged in`);
     } catch (error) {
