@@ -9,17 +9,12 @@ const generateToken = async (data) => {
     }
 };
 
-const cookieOptions = (req) => {
-    const isSecureRequest =
-        req.secure || req.headers["x-forwarded-proto"] === "https";
-
-    return {
-        httpOnly: true,
-        secure: process.env.ENVIRONMENT === "production" && isSecureRequest, // Ensures secure cookie only for production and HTTPS
-        sameSite: process.env.ENVIRONMENT === "production" ? "None" : "Lax",
-        path: "/",
-        maxAge: 1 * 60 * 60 * 1000, // 1 hour
-    };
+const cookieOptions = {
+    httpOnly: true,
+    secure: false,
+    sameSite: "None",
+    path: "/",
+    maxAge: 1 * 60 * 60 * 1000, // 1 hour
 };
 
 module.exports = {
