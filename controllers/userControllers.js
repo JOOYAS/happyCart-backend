@@ -92,7 +92,7 @@ const userLogin = async (req, res, next) => {
             role: isUserExist.role,
         };
         const token = await generateToken(data4token);
-        res.cookie("token", token);
+        res.cookie("token", token, cookieOptions);
         res.status(200).json({
             user: data4token,
             success: true,
