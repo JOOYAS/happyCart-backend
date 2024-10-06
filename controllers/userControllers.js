@@ -2,7 +2,6 @@ const bcrypt = require("bcrypt");
 const User = require("../models/userModel");
 const { generateToken, cookieOptions } = require("../utils/generateToken");
 const handleImageUpload = require("../utils/imageUpload");
-const upload = require("../middlewares/multer");
 const deleteFile = require("../utils/deleteFile");
 
 const allUsers = async (req, res, next) => {
@@ -93,7 +92,7 @@ const userLogin = async (req, res, next) => {
             role: isUserExist.role,
         };
         const token = await generateToken(data4token);
-        res.cookie("token", token, cookieOptions);
+        res.cookie("token", token);
         res.status(200).json({
             user: data4token,
             success: true,
