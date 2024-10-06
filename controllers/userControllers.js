@@ -97,7 +97,7 @@ const userLogin = async (req, res, next) => {
         res.status(200).json({
             user: data4token,
             success: true,
-            message: `Welcome ${data4token.name}<br/>you are logged in`,
+            message: `Welcome ${data4token.name} you are logged in`,
         });
         console.log(`${data4token.name} logged in`);
     } catch (error) {
