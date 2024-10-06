@@ -1,4 +1,3 @@
-const upload = require("../middlewares/multer");
 const Category = require("../models/categoryModel");
 const SubCategory = require("../models/subCategoryModel");
 const deleteFile = require("../utils/deleteFile");
