@@ -15,8 +15,7 @@ const cookieOptions = (req) => {
 
     return {
         httpOnly: true,
-        secure:
-            process.env.ENVIRONMENT === "production" && isSecureRequest(req), // Ensures secure cookie only for production and HTTPS
+        secure: process.env.ENVIRONMENT === "production" && isSecureRequest, // Ensures secure cookie only for production and HTTPS
         sameSite: process.env.ENVIRONMENT === "production" ? "None" : "Lax",
         path: "/",
         maxAge: 1 * 60 * 60 * 1000, // 1 hour
