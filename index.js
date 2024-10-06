@@ -6,7 +6,6 @@ const cors = require("cors");
 const { apiRouter } = require("./route-versions");
 const handleError = require("./utils/error");
 const connectDB = require("./config/connectDB");
-const upload = require("./middlewares/multer");
 const port = 3000;
 
 const app = express();
