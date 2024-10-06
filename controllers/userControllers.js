@@ -49,7 +49,7 @@ const userSignup = async (req, res, next) => {
         };
         console.log(`${userData.name} user joined`);
         const token = await generateToken(data4token);
-        res.cookie("token", token, cookieOptions);
+        res.cookie("token", token, cookieOptions(req));
         res.status(201).json({
             ...data4token,
             success: true,
@@ -92,7 +92,7 @@ const userLogin = async (req, res, next) => {
             role: isUserExist.role,
         };
         const token = await generateToken(data4token);
-        res.cookie("token", token, cookieOptions);
+        res.cookie("token", token, cookieOptions(req));
         res.status(200).json({
             user: data4token,
             success: true,
