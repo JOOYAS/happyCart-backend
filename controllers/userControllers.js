@@ -3,14 +3,17 @@ const User = require("../models/userModel");
 const { generateToken, cookieOptions } = require("../utils/generateToken");
 const handleImageUpload = require("../utils/imageUpload");
 const deleteFile = require("../utils/deleteFile");
+const Order = require("../models/orderModel");
+const Cart = require("../models/cartModel");
+const haveToken = require("../utils/haveToken");
 
+//access only after middleware isAdmin
 const allUsers = async (req, res, next) => {
-    //access only after middleware isAdmin
     try {
-        const users = await User.find({}).select("name _id email orders");
+        const users = await User.find({}).select("name _id email");
         if (users) return res.status(200).json(users);
     } catch (error) {
-        console.log(error);
+        console.log("allUsers adm : ", error);
         next(error);
     }
 };
@@ -19,18 +22,26 @@ const userSignup = async (req, res, next) => {
     try {
         let imageUrl;
         const userData = req.body;
-        const isUserExist = await User.findOne({ email: userData.email });
+        const { email, password, name } = userData;
+        if (!email || !password || !name) {
+            return res.status(400).json({
+                message:
+                    "Please complete all the required information to proceed",
+            });
+        }
+        const isUserExist = await User.findOne({ email: email });
         if (isUserExist) {
             return res.status(400).json({ message: "user already exist" });
         }
+
+        //encrypting password
+        const saltRounds = 10;
+        const hashedPassword = await bcrypt.hash(userData.password, saltRounds);
 
         if (req.file) {
             imageUrl = await handleImageUpload(req.file.path);
             deleteFile(req.file.path);
         }
-        //encrypting password
-        const saltRounds = 10;
-        const hashedPassword = await bcrypt.hash(userData.password, saltRounds);
 
         const newUser = new User({
             ...userData,
@@ -44,43 +55,42 @@ const userSignup = async (req, res, next) => {
         const data4token = {
             _id: newUser._id,
             name: userData.name,
-            email: userData.email,
             role: newUser.role,
         };
         console.log(`${userData.name} user joined`);
         const token = await generateToken(data4token);
         res.cookie("token", token, cookieOptions);
         res.status(201).json({
-            ...data4token,
+            newUser,
             success: true,
-            message: `account for ${userData.name} created successfully`,
+            message: `Account for ${userData.name.toUpperCase()} created successfully`,
         });
     } catch (error) {
-        console.log("some error in signup");
+        console.log("user signup : ", error);
         next(error);
     }
 };
 
 const userLogin = async (req, res, next) => {
     try {
-        const loginData = req.body;
-        if (!loginData) {
+        const alreadyLoggedIn = await haveToken(req, res);
+        if (alreadyLoggedIn) return;
+
+        const { email, password } = req.body;
+        if (!email || !password) {
             return res
                 .status(400)
                 .json({ message: "incomplete username or password" });
         }
         //if got loginData
-        const isUserExist = await User.findOne({ email: loginData.email });
+        const isUserExist = await User.findOne({ email: email });
         if (!isUserExist) {
             return res
                 .status(404)
                 .json({ success: false, message: "user does not exist" });
         }
         //compares hashed userpassword with normal login password
-        const passMatch = bcrypt.compareSync(
-            loginData.password,
-            isUserExist.password
-        );
+        const passMatch = bcrypt.compareSync(password, isUserExist.password);
         if (!passMatch) {
             return res.status(401).json({ message: "incorrect password" });
         }
@@ -94,13 +104,13 @@ const userLogin = async (req, res, next) => {
         const token = await generateToken(data4token);
         res.cookie("token", token, cookieOptions);
         res.status(200).json({
-            user: data4token,
+            user: isUserExist,
             success: true,
             message: `Welcome ${data4token.name} you are logged in`,
         });
         console.log(`${data4token.name} logged in`);
     } catch (error) {
-        console.log("some error in login:", error);
+        console.log("Userlogin : ", error);
         next(error);
     }
 };
@@ -109,12 +119,22 @@ const userUpdate = async (req, res, next) => {
     try {
         let imageUrl;
         const newDetails = req.body;
-        if (!newDetails)
-            return res.status(400).json({ message: "no deails given" });
+        if (!newDetails || Object.keys(newDetails).length === 0)
+            return res.status(400).json({ message: "no details are given" });
         const isUserExist = await User.findById(req.params.userId);
         if (!isUserExist)
             return res.status(404).json({ messsage: "failed to update" });
-
+        if (newDetails?.email !== isUserExist.email) {
+            //check the new mail is already in use
+            const isMailTaken = await User.findOne({
+                email: newDetails?.email,
+            });
+            if (isMailTaken) {
+                return res.status(400).json({
+                    message: `mail-id ${newDetails?.email?.toUpperCase()} is in use, Can't change from ${isUserExist?.email?.toUpperCase()}`,
+                });
+            }
+        }
         if (req.file) {
             imageUrl = await handleImageUpload(req.file.path);
             deleteFile(req.file.path);
@@ -137,30 +157,29 @@ const userUpdate = async (req, res, next) => {
         const token = await generateToken(data4token);
         res.cookie("token", token, cookieOptions);
         res.status(200).json({
+            user: updatedUser,
             message: "Successfully updated details",
-            updatedUser,
         });
     } catch (error) {
-        console.log(error);
+        console.log("update user : ", error);
         next(error);
     }
 };
 
 const deleteUser = async (req, res, next) => {
     try {
-        const isUserToDelete = await User.findByIdAndDelete(req.params.userId);
+        const user = await User.findById(req.params.userId);
 
-        if (!isUserToDelete)
-            return res.status(400).json({
-                success: false,
-                message: "this user not exist",
-            });
+        await Order.findOneAndDelete({ user: user._id });
+        await Cart.findOneAndDelete({ user: user._id });
+
         res.status(200).json({
+            deletedUser: user,
             success: true,
-            message: "your account successfully deleted",
+            message: "your account deletion successful",
         });
     } catch (error) {
-        console.log(error);
+        console.log("deleteUser : ", error);
         next(error);
     }
 };

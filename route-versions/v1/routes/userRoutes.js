@@ -10,15 +10,22 @@ const logout = require("../../../utils/logout");
 const upload = require("../../../middlewares/multer");
 const userAuth = require("../../../middlewares/userAuth");
 const adminAuth = require("../../../middlewares/adminAuth");
+const validateObjectId = require("../../../middlewares/validateObjectId");
 
 const router = express.Router();
 // for admin
-router.get("/", adminAuth, allUsers);
+router.get("/all", adminAuth, allUsers);
 
-router.post("/signup", upload.single("image"), userSignup);
+router.post("/signup", userSignup);
 router.post("/login", userLogin);
 router.get("/logout", userAuth, logout);
-router.patch("/:userId", userAuth, upload.single("image"), userUpdate);
-router.delete("/:userId", userAuth, deleteUser);
+router.patch(
+    "/:userId",
+    validateObjectId,
+    userAuth,
+    upload.single("image"),
+    userUpdate
+);
+router.delete("/:userId", validateObjectId, userAuth, deleteUser);
 
 module.exports = { userRoutes: router };

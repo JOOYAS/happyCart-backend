@@ -2,19 +2,19 @@ const mongoose = require("mongoose");
 
 const orderSchema = new mongoose.Schema(
     {
-        userId: {
+        user: {
             type: mongoose.Schema.Types.ObjectId,
             ref: "User",
             required: true,
         },
-        productId: {
+        product: {
             type: mongoose.Schema.Types.ObjectId,
             ref: "Product",
             required: true,
         },
         quantity: {
             type: Number,
-            required: true,
+            default: 1,
         },
         address: {
             type: Object,
@@ -27,11 +27,11 @@ const orderSchema = new mongoose.Schema(
                     enum: [
                         "order placed",
                         "product shipped",
+                        "out for delivery",
                         "delivered",
                         "cancelled",
                         "returned",
                     ],
-                    required: true,
                 },
                 timestamp: {
                     type: Date,
@@ -39,17 +39,13 @@ const orderSchema = new mongoose.Schema(
                 },
             },
         ],
-        orderPrice: {
+        price: {
             type: Number,
             required: true,
         },
         isPaid: {
             type: Boolean,
             default: false,
-        },
-        reviewId: {
-            type: mongoose.Schema.Types.ObjectId,
-            ref: "Review",
         },
     },
     { timestamps: true }

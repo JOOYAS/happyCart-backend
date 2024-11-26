@@ -2,9 +2,14 @@ const mongoose = require("mongoose");
 
 const reviewSchema = new mongoose.Schema(
     {
-        orderId: {
+        order: {
             type: mongoose.Schema.Types.ObjectId,
             ref: "Order",
+            required: true,
+        },
+        product: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "Product",
             required: true,
         },
         rating: {

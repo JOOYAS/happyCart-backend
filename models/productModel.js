@@ -6,6 +6,34 @@ const productSchema = new mongoose.Schema(
             type: String,
             required: true,
         },
+        description: {
+            type: String,
+            required: true,
+        },
+        price: {
+            max: {
+                type: Number,
+                required: true,
+            },
+            sale: {
+                type: Number,
+                required: true,
+            },
+        },
+        images: [
+            {
+                type: String,
+            },
+        ],
+        seller: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "Seller",
+            required: true,
+        },
+        category: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "Category",
+        },
         brand: {
             type: String,
             required: true,
@@ -14,46 +42,25 @@ const productSchema = new mongoose.Schema(
             type: Boolean,
             default: false,
         },
-        images: [
-            {
-                type: String,
-                required: true,
-            },
-        ],
-        sellerId: {
-            type: mongoose.Schema.Types.ObjectId,
-            ref: "Seller",
-            required: true,
-        },
-        maxPrice: {
-            type: Number,
-            required: true,
-        },
-        salePrice: {
-            type: Number,
-            required: true,
-        },
-        description: {
-            type: String,
-            required: true,
-        },
-        category: {
-            type: mongoose.Schema.Types.ObjectId,
-            ref: "SubCategory",
-        },
+
         stock: {
             type: Number,
-            required: true,
             default: 0,
+        },
+        tags: {
+            type: [String],
         },
         rating: {
             type: Number,
             default: 0,
         },
-        reviews: [
+        variants: [
             {
-                type: mongoose.Schema.Types.ObjectId,
-                ref: "Review",
+                variantType: { type: String, required: true }, // e.g., "Size", "Color"
+                variantValue: { type: String, required: true }, // e.g., "M", "Blue"
+                price: { type: Number, required: true },
+                stock: { type: Number, default: 0 },
+                images: [String],
             },
         ],
     },

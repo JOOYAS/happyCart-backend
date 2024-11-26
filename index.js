@@ -33,5 +33,5 @@ app.all("*", (req, res) => {
 });
 
 app.listen(port, () => {
-    console.log(`started, on port ${port}`);
+    console.log(`✅ started\nhttp://localhost:${port}/api`);
 });

@@ -2,6 +2,16 @@ const mongoose = require("mongoose");
 
 const userSchema = new mongoose.Schema(
     {
+        email: {
+            type: String,
+            required: true,
+        },
+        phone: String,
+
+        password: {
+            type: String,
+            required: true,
+        },
         role: {
             type: String,
             default: "user",
@@ -10,26 +20,22 @@ const userSchema = new mongoose.Schema(
             type: String,
             required: true,
         },
-        profile: String,
-        email: {
-            type: String,
-            required: true,
-        },
-        password: {
-            type: String,
-            required: true,
-        },
-        address: {
-            houseNo: String,
-            street: String,
-            pin: String,
-            state: String,
-        },
-        phone: String,
-        orders: [
+        profilePicture: String,
+
+        address: [
+            {
+                name: String,
+                houseNo: String,
+                street: String,
+                city: String,
+                pin: String,
+                state: String,
+            },
+        ],
+        wishList: [
             {
                 type: mongoose.Schema.Types.ObjectId,
-                ref: "Order",
+                ref: "Product",
             },
         ],
         cart: [

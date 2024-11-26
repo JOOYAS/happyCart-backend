@@ -1,32 +1,76 @@
-const CartItem = require("../models/cartmodel");
+const Cart = require("../models/cartModel");
 const User = require("../models/userModel");
 
 const addNewItem = async (req, res, next) => {
     try {
-        const newItemData = req.body;
-        if (!newItemData)
-            return res
-                .status(400)
-                .json({ message: "no details found to add to cart" });
-        const newItem = new CartItem(newItemData);
+        const { product } = req.body;
+        if (!product || !req.user)
+            return res.status(400).json({ message: "retry" });
+        const isInCart = await Cart.findOne({
+            product,
+            user: req.user._id,
+        });
+        if (isInCart) {
+            return res.status(400).json({ message: "product already in Cart" });
+        }
+        const newItem = new Cart({
+            ...req.body,
+            user: req.user._id,
+        });
         await newItem.save();
 
-        await User.findByIdAndUpdate(newItem.userId, {
-            $push: { cart: newItem._id },
-        });
         res.status(200).json({
             success: true,
-            message: "added item to cart",
+            message: "added to cart",
         });
     } catch (error) {
-        console.log(error);
+        console.log("newCartItem : ", error);
+        next(error);
+    }
+};
+
+//access only to the user
+const listItemsOfAUser = async (req, res, next) => {
+    try {
+        const cartItems = await Cart.find({ user: req.params.userId });
+        if (!cartItems) {
+            return res
+                .status(404)
+                .json({ message: "couldn't find items in your cart" });
+        }
+        if (!cartItems.length)
+            return res
+                .status(200)
+                .json({ message: "Empty cart, time to shop!" });
+
+        res.status(200).json(cartItems);
+    } catch (error) {
+        console.log("cartItemsofUser : ", error);
+        next(error);
+    }
+};
+
+//access only to the  user
+const viewItem = async (req, res, next) => {
+    try {
+        const item = await Cart.findById(req.params.cartId);
+        if (!item)
+            return res.status(400).json({ message: "invalid cart item" });
+
+        res.status(200).json(item);
+    } catch (error) {
+        console.log("viewCartItem : ", error);
         next(error);
     }
 };
 
 const updateItem = async (req, res, next) => {
     try {
-        const updated = await CartItem.findByIdAndUpdate(
+        if (!req.body || Object.keys(req.body).length === 0)
+            return res
+                .status(400)
+                .json({ message: "no details given to update" });
+        const updated = await Cart.findByIdAndUpdate(
             req.params.cartId,
             req.body,
             {
@@ -37,60 +81,30 @@ const updateItem = async (req, res, next) => {
         if (!updated)
             return res
                 .status(500)
-                .json({ message: "couldn't find and update the item" });
+                .json({ message: "couldn't find the item to update" });
         res.status(200).json({
             updated,
             success: true,
-            message: "status updated successfully",
+            message: "cart Item updated",
         });
     } catch (error) {
-        console.log(error);
+        console.log("updateCartItem : ".error);
         next(error);
     }
 };
 
-const listItemsOfAUser = async (req, res, next) => {
-    try {
-        const cartItems = await CartItem.find({ userId: req.params.userId });
-        if (!cartItems) {
-            return res.status(404).json({ message: "product not exist" });
-        }
-        if (!cartItems.length)
-            return res
-                .status(200)
-                .json({ message: "Empty cart, time to shop!" });
-
-        res.status(200).json(cartItems);
-    } catch (error) {
-        console.log(error);
-        next(error);
-    }
-};
-
-const viewItem = async (req, res, next) => {
-    try {
-        const item = await CartItem.findById(req.params.cartId);
-        if (!item)
-            return res.status(400).json({ message: "invalid cart item" });
-
-        res.status(200).json(item);
-    } catch (error) {
-        console.log(error);
-        next(error);
-    }
-};
-
+//access only for the user
 const removeItem = async (req, res, next) => {
     try {
-        const removedItem = await CartItem.findByIdAndDelete(req.params.cartId);
+        const removedItem = await Cart.findByIdAndDelete(req.params.cartId);
         if (!removedItem)
-            return res
-                .status(400)
-                .json({ message: "couldn't remove the item" });
+            return res.status(400).json({
+                message: "the item you tried to remove does not exist",
+            });
 
-        res.status(200).json({ message: "item deleted successfully" });
+        res.status(200).json({ message: "item removed " });
     } catch (error) {
-        console.log(error);
+        console.log("removeCartItem : ", error);
         next(error);
     }
 };

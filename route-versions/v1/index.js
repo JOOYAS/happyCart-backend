@@ -6,7 +6,7 @@ const { productRoutes } = require("./routes/productRoutes");
 const { orderRoutes } = require("./routes/orderRoutes");
 const { cartRoutes } = require("./routes/cartRoutes");
 const { reviewRoutes } = require("./routes/reviewRoutes");
-const { variantRoutes } = require("./routes/variantRouter");
+//const { variantRoutes } = require("./routes/variantRouter");
 
 const v1Router = express.Router();
 
@@ -18,6 +18,8 @@ v1Router.use("/order", orderRoutes);
 v1Router.use("/cart", cartRoutes);
 v1Router.use("/review", reviewRoutes);
 v1Router.use("/category", categoryRoutes);
-v1Router.use("/variant", variantRoutes);
+
+//trying to create variants in same product
+//v1Router.use("/variant", variantRoutes);
 
 module.exports = v1Router;

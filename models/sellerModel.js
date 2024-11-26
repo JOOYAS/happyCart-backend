@@ -2,15 +2,6 @@ const mongoose = require("mongoose");
 
 const sellerSchema = new mongoose.Schema(
     {
-        sellerName: {
-            type: String,
-            required: true,
-        },
-        logo: String,
-        verified: {
-            type: Boolean,
-            default: false,
-        },
         email: {
             type: String,
             required: true,
@@ -19,27 +10,30 @@ const sellerSchema = new mongoose.Schema(
             type: String,
             required: true,
         },
-        details: String,
+        sellerName: {
+            type: String,
+            required: true,
+        },
+        brand: {
+            type: Boolean,
+            default: false,
+        },
+        logo: String,
+        verified: {
+            type: Boolean,
+            default: false,
+        },
+        info: String,
         address: {
             buildingNo: String,
             street: String,
             pin: String,
             state: String,
         },
-        contactNumber: String,
-        contactEmail: String,
-        products: [
-            {
-                type: mongoose.Schema.Types.ObjectId,
-                ref: "Product",
-            },
-        ],
-        orders: [
-            {
-                type: mongoose.Schema.Types.ObjectId,
-                ref: "Order",
-            },
-        ],
+        contact: {
+            number: String,
+            email: String,
+        },
     },
     { timestamps: true }
 );

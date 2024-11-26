@@ -8,22 +8,20 @@ const sellerAuth = (req, res, next) => {
                 .status(401)
                 .json({ success: false, message: "you are not logged in" });
         }
-        const tokenVerified = jwt.verify(token, process.env.SECRET_KEY);
-        if (!tokenVerified) {
+        const verifiedToken = jwt.verify(token, process.env.SECRET_KEY);
+        if (!verifiedToken) {
             return res
                 .status(401)
                 .json({ success: false, message: "invalid token" });
         }
 
-        console.log("tokenVerified===", tokenVerified);
-
-        if (tokenVerified.role !== "seller" && tokenVerified.role !== "admin") {
+        if (verifiedToken.role !== "seller" && verifiedToken.role !== "admin") {
             return res
                 .status(401)
                 .json({ success: false, message: "you are not a seller" });
         }
 
-        req.user = tokenVerified;
+        req.user = verifiedToken;
 
         next();
     } catch (error) {

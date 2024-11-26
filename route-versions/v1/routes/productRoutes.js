@@ -8,13 +8,20 @@ const {
 } = require("../../../controllers/productControllers");
 const upload = require("../../../middlewares/multer");
 const adminAuth = require("../../../middlewares/adminAuth");
+const validateObjectId = require("../../../middlewares/validateObjectId");
+const sellerAuth = require("../../../middlewares/sellerAuth");
 
 const router = express.Router();
-router.get("/", adminAuth,listAllProduct);
+router.get("/", adminAuth, listAllProduct);
 
-router.post("/", upload.array("images"), newProduct);
-router.get("/:productId", viewProduct);
-router.patch("/:productId", upload.array("images"), updateProduct);
-router.delete("/:productId", removeProduct);
+router.post("/", sellerAuth, upload.array("images"), newProduct);
+router.get("/:productId", validateObjectId, viewProduct);
+router.patch(
+    "/:productId",
+    validateObjectId,
+    upload.array("images"),
+    updateProduct
+);
+router.delete("/:productId", validateObjectId, removeProduct);
 
 module.exports = { productRoutes: router };

@@ -1,3 +1,4 @@
+const Order = require("../models/orderModel");
 const Product = require("../models/productModel");
 const Review = require("../models/reviewModel");
 const deleteFile = require("../utils/deleteFile");
@@ -7,8 +8,30 @@ const newReview = async (req, res, next) => {
     try {
         let imageUrls;
         const reviewData = req.body;
+        const { rating, comment } = reviewData;
+        if (!rating || !comment || !comment.length) {
+            return res.status(400).json({ message: "no review data given" });
+        }
+
+        const order = await Order.findById(req.params.orderId).select(
+            "_id product statusList user"
+        );
+        if (order.user.toString() !== req.user._id)
+            return res.status(400).json({
+                message: "You are not permitted to perform this action",
+            });
+        if (
+            order.statusList.length > 0 &&
+            order.statusList[order.statusList.length - 1].status !== "delivered"
+        ) {
+            return res.status(400).json({
+                message:
+                    "Reviews can only be added after a successful delivery",
+            });
+        }
+
         const isAlreadyReviewed = await Review.findOne({
-            orderId: reviewData.orderId,
+            order: req.params.orderId,
         });
         if (isAlreadyReviewed) {
             return res
@@ -25,18 +48,19 @@ const newReview = async (req, res, next) => {
             );
             req.files.forEach((file) => deleteFile(file.path));
         }
+
         const newReview = new Review({
+            user: req.user._id,
+            order: order._id,
+            product: order.product,
             ...reviewData,
             ...(imageUrls && { images: imageUrls }),
         });
         await newReview.save();
 
-        await Product.findByIdAndUpdate(newReview.productId, {
-            $push: { reviews: newReview._id },
-        });
         res.status(200).json(newReview);
     } catch (error) {
-        console.log(error);
+        console.log("new Review : ", error);
         next(error);
     }
 };
@@ -45,9 +69,13 @@ const editReview = async (req, res, next) => {
     try {
         let imageUrls;
         const editedReviewData = req.body;
+        if (!editedReviewData || Object.keys(editedReviewData).length === 0)
+            return res
+                .status(400)
+                .json({ message: "no details given to update" });
         const isReviewed = await Review.findById(req.params.reviewId);
         if (!isReviewed)
-            return res.status(404).json({ message: "review not exist" });
+            return res.status(404).json({ message: "review doesn't exist" });
 
         if (req.files) {
             imageUrls = await Promise.all(
@@ -70,7 +98,7 @@ const editReview = async (req, res, next) => {
             updated,
         });
     } catch (error) {
-        console.log(error);
+        console.log("edit Review : ", error);
         next(error);
     }
 };
@@ -79,30 +107,42 @@ const viewReview = async (req, res, next) => {
     try {
         const review = await Review.findById(req.params.reviewId);
         if (!review) {
-            return res.status(404).json({ message: "review not exist" });
+            return res.status(404).json({ message: "Review doesn't exist" });
         }
 
         res.status(200).json(review);
     } catch (error) {
-        console.log(error);
+        console.log("View Review : ", error);
         next(error);
     }
 };
 
+//for a product
+const viewReviews = async (req, res, next) => {
+    try {
+        const reviews = await Review.find({ product: req.params.productId });
+
+        if (!reviews || !reviews.length) {
+            return res.status(404).json({ message: "No reviews" });
+        }
+
+        res.status(200).json(reviews);
+    } catch (error) {
+        console.log("view revieews of a product : ", error);
+        next(error);
+    }
+};
+
+//
 const removeReview = async (req, res, next) => {
     try {
-        const isReviewToDelete = await Review.findByIdAndDelete(
-            req.params.reviewId
-        );
-        if (!isReviewToDelete)
+        const review = await Review.findByIdAndDelete(req.params.reviewId);
+        if (!review)
             return res.status(400).json({ message: "no review to delete" });
-        await Product.findByIdAndUpdate(isReviewToDelete.productId, {
-            $pull: { reviews: req.params.reviewId },
-        });
 
         res.status(200).json({ success: true, message: "review deleted" });
     } catch (error) {
-        console.log(error);
+        console.log("delete Review : ", error);
         next(error);
     }
 };
@@ -110,5 +150,6 @@ module.exports = {
     newReview,
     editReview,
     viewReview,
+    viewReviews,
     removeReview,
 };
